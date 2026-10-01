@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz & C-Test Bahasa Jerman - Eine Reise mit dem Zug</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        deutschRed: '#DD0000',
+                        deutschGold: '#FFCC00',
+                        deutschBlack: '#000000',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .option-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .correct-anim {
+            animation: pulseGreen 0.4s ease-out;
+        }
+        .wrong-anim {
+            animation: shakeRed 0.4s ease-out;
+        }
+        @keyframes pulseGreen {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        @keyframes shakeRed {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between">
+
+    <!-- Navigation Header -->
+    <header class="bg-slate-900 text-white shadow-md border-b-4 border-amber-400 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">🇩🇪</span>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">Deutsch B1–B2 Training</h1>
+                    <p class="text-xs text-amber-300 font-medium">Eine Reise mit dem Zug</p>
+                </div>
+            </div>
+            <!-- Stage Indicators -->
+            <div class="flex items-center space-x-2 text-xs md:text-sm font-semibold">
+                <span id="nav-stage-1" class="px-3 py-1 rounded-full bg-amber-400 text-slate-900 shadow">1. Wortschatz Quiz</span>
+                <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
+                <span id="nav-stage-2" class="px-3 py-1 rounded-full bg-slate-800 text-slate-400">2. C-Test</span>
+                <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
+                <span id="nav-stage-3" class="px-3 py-1 rounded-full bg-slate-800 text-slate-400">3. Hasil & Pembahasan</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto w-full px-4 py-6 flex-grow">
+
+        <!-- SECTION 1: QUIZ WORTSCHATZ & GRAMMATIK -->
+        <section id="section-quiz" class="block space-y-6">
+            <!-- Progress Bar -->
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500">
+                        Soal <span id="quiz-current-num" class="text-slate-900 text-sm">1</span> dari 13
+                    </span>
+                    <span class="text-xs font-semibold px-2.5 py-0.5 rounded bg-blue-100 text-blue-800" id="quiz-score-badge">
+                        Skor Quiz: 0 / 13
+                    </span>
+                </div>
+                <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                    <div id="quiz-progress-bar" class="bg-gradient-to-r from-amber-400 to-amber-500 h-2.5 rounded-full transition-all duration-300" style="width: 7.69%"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-white rounded-2xl p-6 md:p-8 shadow-md border border-slate-200 relative">
+                <div class="mb-6">
+                    <span class="text-xs font-semibold px-3 py-1 rounded-full bg-amber-100 text-amber-800 inline-block mb-3">
+                        Level B1–B1+ / B2
+                    </span>
+                    <h2 id="quiz-question-text" class="text-xl md:text-2xl font-bold text-slate-900 leading-snug">
+                        Loading...
+                    </h2>
+                </div>
+
+                <!-- Multiple Choice Options -->
+                <div id="quiz-options-container" class="space-y-3 mb-6">
+                    <!-- Options generated via JS -->
+                </div>
+
+                <!-- Pembahasan Bahasa Indonesia Box (Hidden initially) -->
+                <div id="quiz-explanation-box" class="hidden mt-6 p-5 rounded-xl border transition-all duration-300">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <span id="explanation-icon" class="text-lg"></span>
+                        <h4 id="explanation-status" class="font-bold text-base"></h4>
+                    </div>
+                    <p id="explanation-text" class="text-sm md:text-base leading-relaxed text-slate-700 font-normal">
+                        <!-- Explanation text inserted via JS -->
+                    </p>
+                </div>
+
+                <!-- Navigation Controls -->
+                <div class="mt-6 flex justify-between items-center pt-4 border-t border-slate-100">
+                    <button id="btn-prev-quiz" onclick="prevQuizQuestion()" class="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition">
+                        <i class="fa-solid fa-arrow-left mr-2"></i> Sebelumnya
+                    </button>
+                    
+                    <button id="btn-next-quiz" onclick="nextQuizQuestion()" disabled class="px-5 py-2.5 text-sm font-semibold text-white bg-slate-900 rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition shadow">
+                        Selanjutnya <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: C-TEST -->
+        <section id="section-ctest" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 md:p-8 shadow-md border border-slate-200">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4 mb-6">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-800">
+                                Bagian 2
+                            </span>
+                            <span class="text-xs font-medium text-slate-500">17 Kata Hilang</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-900 mt-1">C-Test: Thema „Eine Reise mit dem Zug“</h2>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 max-w-xs">
+                        <i class="fa-solid fa-lightbulb text-amber-600 mr-1"></i>
+                        <strong>Petunjuk C-Test:</strong> Lengkapi kata yang terpotong. Suku kata pembuka telah diberikan sebagai acuan!
+                    </div>
+                </div>
+
+                <!-- Interactive C-Test Paragraph -->
+                <div class="prose max-w-none text-base md:text-lg leading-loose text-slate-800 font-serif bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-inner">
+                    Letzten Monat plante ich mit einer Freundin eine kurze Reise und wir 
+                    <span class="inline-flex items-baseline bg-white px-1.5 py-0.5 rounded border border-slate-300 font-sans text-sm">
+                        <strong class="text-slate-900">entsch</strong>
+                        <input type="text" id="ctest-gap-1" data-answer="ieden" class="w-16 px-1 text-center font-bold text-blue-700 bg-amber-50 border-b-2 border-amber-400 focus:outline-none focus:bg-amber-100 transition" placeholder="..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+                    </span> 
+                    uns dafür, möglichst 
+                    <span class="inline-flex items-baseline bg-white px-1.5 py-0.5 rounded border border-slate-300 font-sans text-sm">
+                        <strong class="text-slate-900">umweltfr</strong>
+                        <input type="text" id="ctest-gap-2" data-answer="eundlich" class="w-20 px-1 text-center font-bold text-blue-700 bg-amber-50 border-b-2 border-amber-400 focus:outline-none focus:bg-amber-100 transition" placeholder="..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+                    </span> 
+                    unterwegs zu sein und mit dem Zug statt mit dem Auto zu fahren. Zuerst suchten wir eine geeignete 
+                    <span class="inline-flex items-baseline bg-white px-1.5 py-0.5 rounded border border-slate-300 font-sans text-sm">
+                        <strong class="text-slate-900">Verbin</strong>
+                        <input type="text" id="ctest-gap-3" data-answer="dung" class="w-16 px-1 text-center font-bold text-blue-700 bg-amber-50 border-b-2 border-amber-400 focus:outline-none focus:bg-amber-100 transition" placeholder="..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+                    </span> 
+                    und achteten darauf, nicht zu viel Zeit durch häufiges 
+                    <span class="inline-flex items-baseline bg-white px-1.5 py-0.5 rounded border border-slate-300 font-sans text-sm">
+                        <strong class="text-slate-900">Umst</strong>
+                        <input type="text" id="ctest-gap-4" data-answer="eigen" class="w-16 px-1 text-center font-bold text-blue-700 bg-amber-50 border-b-2 border-amber-400 focus:outline-none focus:bg-amber-100 transition" placeholder="..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+                    </span> 
+                    zu verlieren. Am Reisetag kamen wir frühzeitig am Bahnhof an, doch auf der Anzeigetafel wurde eine 
+                    <span class="inline-flex items-baseline bg-white px-1.5 py-0.5 rounded border border-slate-300 font-sans text-sm">
+                        <strong class="text-slate-900">unerw</strong>
+                        <input type="text" id="ctest-gap-5" data-answer="artete" class="w-16 px-1 text-center font-bold text-blue-700 bg-amber-50 border-b-2 border-amber-400 focus:outline-none focus:bg-amber-100 transition" placeholder="..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+                    </span> 
+                    <span class="inline-flex items-baseline bg-white px-1.5 py-0.5 rounded border border-slate-300 font-sans text-sm">
+                        <strong class="text-slate-900">Verspät</strong>
+                        <input type="text" id="ctest-gap-6" data-answer="ung" class="w-16 px-1 text-center font-bold text-blue-700 bg-amber-50 border-b-2 border-amber-400 focus:outline-none focus:bg-amber-100 transition" placeholder="..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+                    </span> 
+                    wegen einer 
+                    <span class="inline-flex items-baseline bg-white px-1.5 py-0.5 rounded border border-slate-300 font-sans text-sm">
+                        <strong class="text-slate-900">techn</strong>
+                        <input type="text" id="ctest-gap-7" data-answer="ischen" class="w-16 px-1 text-center font-bold text-blue-700 bg-amber-50 border-b-2 border-amber-400 focus:outline-none focus:bg-amber-100 transition" placeholder="..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+                    </span> 
+                    Störung bekannt gegeben. Wir nutzten die zusätzliche Zeit, um einen Kaffee zu trinken und unsere weitere Reise zu 
+                    <span class="inline-flex items-baseline bg-white px-1.5 py-0.5 rounded border border-slate-300 font-sans text-sm">
+                        <strong class="text-slate-900">bespr</strong>
+                        <input type="text" id="ctest-gap-8" data-answer="echen" class="w-16 px-1 text-center font-bold text-blue-700 bg-amber-50 border-b-2 border-amber-400 focus:outline-none focus:bg-amber-100 transition" placeholder="..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+                    </span>, 
+                    bevor der Zug endlich eintraf und wir unsere 
+                    <span class="inline-flex items-baseline bg-white px-1.5 py-0.5 rounded border border-slate-300 font-sans text-sm">
+                        <strong class="text-slate-900">Sitzp</strong>
+                        <input type="text" id="ctest-gap-9" data-answer="lätze" class="w-16 px-1 text-center font-bold text-blue-700 bg-amber-50 border-b-2 border-amber-400 focus:outline-none focus:bg-amber-100 transition" placeholder="..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+                    </span> 
+                    suchten. Während der Fahrt konnten wir die 
+                    <span class="inline-flex items-baseline bg-white px-1.5 py-0.5 rounded border border-slate-300 font-sans text-sm">
+                        <strong class="text-slate-900">Lands</strong>
+                        <input type="text" id="ctest-gap-10" data-answer="chaft" class="w-16 px-1 text-center font-bold text-blue-700 bg-amber-50 border-b-2 border-amber-400 focus:outline-none focus:bg-amber-100 transition" placeholder="..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+                    </span> 
+                    genießen und uns gleichzeitig über verschiedene 
+                    <span class="inline-flex items-baseline bg-white px-1.5 py-0.5 rounded border border-slate-300 font-sans text-sm">
+                        <strong class="text-slate-900">The</strong>
+                        <input type="text" id="ctest-gap-11" data-answer="men" class="w-16 px-1 text-center font-bold text-blue-700 bg-amber-50 border-b-2 border-amber-400 focus:outline-none focus:bg-amber-100 transition" placeholder="..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+                    </span> 
+                    unterhalten, bis wir mit einer älteren Frau ins 
+                    <span class="inline-flex items-baseline bg-white px-1.5 py-0.5 rounded border border-slate-300 font-sans text-sm">
+                        <strong class="text-slate-900">Gesp</strong>
+                        <input type="text" id="ctest-gap-12" data-answer="räch" class="w-16 px-1 text-center font-bold text-blue-700 bg-amber-50 border-b-2 border-amber-400 focus:outline-none focus:bg-amber-100 transition" placeholder="..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+                    </span> 
+                    kamen. Sie gab uns einige wertvolle 
+                    <span class="inline-flex items-baseline bg-white px-1.5 py-0.5 rounded border border-slate-300 font-sans text-sm">
+                        <strong class="text-slate-900">Empfeh</strong>
+                        <input type="text" id="ctest-gap-13" data-answer="lungen" class="w-20 px-1 text-center font-bold text-blue-700 bg-amber-50 border-b-2 border-amber-400 focus:outline-none focus:bg-amber-100 transition" placeholder="..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+                    </span> 
+                    für unseren 
+                    <span class="inline-flex items-baseline bg-white px-1.5 py-0.5 rounded border border-slate-300 font-sans text-sm">
+                        <strong class="text-slate-900">Aufen</strong>
+                        <input type="text" id="ctest-gap-14" data-answer="thalt" class="w-16 px-1 text-center font-bold text-blue-700 bg-amber-50 border-b-2 border-amber-400 focus:outline-none focus:bg-amber-100 transition" placeholder="..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+                    </span> 
+                    und empfahl uns einen besonders sehenswerten Ort in der Nähe. Obwohl die Reise etwas länger dauerte als geplant, verlief sie angenehm und 
+                    <span class="inline-flex items-baseline bg-white px-1.5 py-0.5 rounded border border-slate-300 font-sans text-sm">
+                        <strong class="text-slate-900">ents</strong>
+                        <input type="text" id="ctest-gap-15" data-answer="pannt" class="w-16 px-1 text-center font-bold text-blue-700 bg-amber-50 border-b-2 border-amber-400 focus:outline-none focus:bg-amber-100 transition" placeholder="..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+                    </span> 
+                    , sodass wir mit unserer Entscheidung sehr 
+                    <span class="inline-flex items-baseline bg-white px-1.5 py-0.5 rounded border border-slate-300 font-sans text-sm">
+                        <strong class="text-slate-900">zufr</strong>
+                        <input type="text" id="ctest-gap-16" data-answer="ieden" class="w-16 px-1 text-center font-bold text-blue-700 bg-amber-50 border-b-2 border-amber-400 focus:outline-none focus:bg-amber-100 transition" placeholder="..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+                    </span> 
+                    waren und die 
+                    <span class="inline-flex items-baseline bg-white px-1.5 py-0.5 rounded border border-slate-300 font-sans text-sm">
+                        <strong class="text-slate-900">Geleg</strong>
+                        <input type="text" id="ctest-gap-17" data-answer="enheit" class="w-20 px-1 text-center font-bold text-blue-700 bg-amber-50 border-b-2 border-amber-400 focus:outline-none focus:bg-amber-100 transition" placeholder="..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+                    </span> 
+                    nutzten, neue Menschen kennenzulernen und die Umgebung bewusster wahrzunehmen.
+                </div>
+
+                <!-- Submit Button -->
+                <div class="mt-8 flex justify-end">
+                    <button onclick="finishCTest()" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition flex items-center space-x-2 text-base">
+                        <i class="fa-solid fa-check-circle"></i>
+                        <span>Selesaikan C-Test & Lihat Hasil + Pembahasan Bahasa Indonesia</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: HASIL & PEMBAHASAN LENGKAP -->
+        <section id="section-results" class="hidden space-y-8">
+            <!-- Score Overview Card -->
+            <div class="bg-white rounded-2xl p-6 md:p-8 shadow-md border border-slate-200 text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-emerald-500 via-amber-400 to-blue-600"></div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">🎉 Hasil Latihan B1–B2 Bahasa Jerman</h2>
+                <p class="text-slate-600 text-sm mb-6">Berikut adalah ringkasan skor dan pembahasan menyeluruh dalam Bahasa Indonesia.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 text-center">
+                        <span class="text-xs uppercase font-bold text-amber-800 tracking-wider">Skor Quiz Wortschatz</span>
+                        <div id="final-quiz-score" class="text-3xl font-extrabold text-amber-700 mt-1">0 / 13</div>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 text-center">
+                        <span class="text-xs uppercase font-bold text-blue-800 tracking-wider">Skor C-Test</span>
+                        <div id="final-ctest-score" class="text-3xl font-extrabold text-blue-700 mt-1">0 / 17</div>
+                    </div>
+                    <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 text-center">
+                        <span class="text-xs uppercase font-bold text-emerald-800 tracking-wider">Total Akurasi</span>
+                        <div id="final-total-score" class="text-3xl font-extrabold text-emerald-700 mt-1">0%</div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button onclick="downloadResultsPDF()" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold text-sm shadow flex items-center space-x-2">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Download Ringkasan & Pembahasan (.TXT)</span>
+                    </button>
+                    <button onclick="resetAll()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg font-semibold text-sm transition flex items-center space-x-2">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>Ulangi Tes Dari Awal</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- C-Test Detail Breakdown -->
+            <div class="bg-white rounded-2xl p-6 md:p-8 shadow-md border border-slate-200 space-y-6">
+                <div class="border-b pb-4">
+                    <h3 class="text-xl font-bold text-slate-900 flex items-center">
+                        <i class="fa-solid fa-square-check text-emerald-600 mr-2"></i>
+                        Pembahasan Detail C-Test (Bahasa Indonesia)
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-1">Penjelasan analisis kata lengkap untuk setiap gap pada C-Test.</p>
+                </div>
+
+                <!-- C-Test Gap Breakdown Grid -->
+                <div id="ctest-explanation-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Populated via JS -->
+                </div>
+
+                <!-- Full Indonesian Paragraph Translation -->
+                <div class="mt-8 bg-slate-900 text-slate-100 p-6 rounded-2xl shadow-lg border border-slate-800">
+                    <div class="flex items-center space-x-2 mb-3 text-amber-400 font-bold">
+                        <i class="fa-solid fa-language text-xl"></i>
+                        <span>Terjemahan Lengkap Teks C-Test ke Bahasa Indonesia</span>
+                    </div>
+                    <p class="text-slate-300 text-sm md:text-base leading-relaxed italic">
+                        "Bulan lalu saya dan seorang teman perempuan merencanakan perjalanan singkat, dan kami <strong>memutuskan</strong> untuk bepergian se-<strong>ramah lingkungan</strong> mungkin dengan naik kereta alih-alih menggunakan mobil. Pertama, kami mencari <strong>koneksi/rute</strong> yang sesuai dan memperhatikan agar tidak terbuang terlalu banyak waktu karena sering <strong>transit/berganti kereta</strong>. Pada hari keberangkatan, kami tiba lebih awal di stasiun, tetapi di papan pengumuman diumumkan <strong>keterlambatan</strong> yang <strong>tak terduga</strong> akibat gangguan <strong>teknis</strong>. Kami memanfaatkan waktu ekstra tersebut untuk minum kopi dan <strong>membicarakan</strong> perjalanan kami selanjutnya sebelum kereta akhirnya tiba dan kami mencari <strong>tempat duduk</strong> kami. Selama perjalanan kami dapat menikmati <strong>pemandangan</strong> dan sekaligus bercakap-cakap mengenai berbagai <strong>topik</strong>, hingga kami <strong>mulai mengobrol</strong> dengan seorang wanita tua. Ia memberi kami beberapa <strong>rekomendasi</strong> berharga untuk <strong>masa tinggal/kunjungan</strong> kami dan merekomendasikan tempat yang sangat layak dikunjungi di dekat sana. Meskipun perjalanan memakan waktu sedikit lebih lama dari yang direncanakan, perjalanan berlangsung menyenangkan dan <strong>santai</strong>, sehingga kami sangat <strong>puas</strong> dengan keputusan kami dan menggunakan <strong>kesempatan</strong> ini untuk mengenal orang-orang baru serta menikmati lingkungan sekitar dengan lebih sadar."
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quiz Wortschatz Summary List -->
+            <div class="bg-white rounded-2xl p-6 md:p-8 shadow-md border border-slate-200 space-y-4">
+                <div class="border-b pb-4">
+                    <h3 class="text-xl font-bold text-slate-900 flex items-center">
+                        <i class="fa-solid fa-list-check text-blue-600 mr-2"></i>
+                        Ringkasan Pembahasan 13 Soal Wortschatz & Grammatik
+                    </h3>
+                </div>
+                <div id="quiz-summary-list" class="space-y-4">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 text-center text-xs">
+        <p>🇩🇪 Bahasa Jerman B1–B2 Interactive Quiz & C-Test Engine</p>
+    </footer>
+
+    <script>
+        // Quiz Questions Data with Options & Detailed Indonesian Explanation
+        const quizData = [
+            {
+                id: 1,
+                question: "1. Was bedeutet „sich für etwas entscheiden“?",
+                options: [
+                    "A. etwas vermeiden",
+                    "B. etwas auswählen und beschließen",
+                    "C. etwas vergessen",
+                    "D. etwas verschieben"
+                ],
+                correctIndex: 1,
+                explanation: "<strong>Jawaban Benar: B (etwas auswählen und beschließen)</strong><br><br>💡 <em>Pembahasan:</em> Kata kerja refleksif <strong>„sich für etwas entscheiden“</strong> berarti <strong>memilih dan memutuskan sesuatu</strong> setelah mempertimbangkan opsi yang ada.<br>• <em>Contoh:</em> Wir entscheiden uns für den Zug. (Kami memutuskan untuk naik kereta.)"
+            },
+            {
+                id: 2,
+                question: "2. Welche Bedeutung hat „umweltfreundlich“?",
+                options: [
+                    "A. praktisch und günstig",
+                    "B. modern und bequem",
+                    "C. die Umwelt möglichst wenig belastend",
+                    "D. besonders schnell"
+                ],
+                correctIndex: 2,
+                explanation: "<strong>Jawaban Benar: C (die Umwelt möglichst wenig belastend)</strong><br><br>💡 <em>Pembahasan:</em> <strong>„Umweltfreundlich“</strong> terdiri dari kata <em>Umwelt</em> (lingkungan) + <em>freundlich</em> (ramah). Artinya adalah <strong>ramah lingkungan</strong> (memberikan dampak sekecil mungkin pada alam)."
+            },
+            {
+                id: 3,
+                question: "3. Was ist eine „geeignete Verbindung“ bei einer Zugreise?",
+                options: [
+                    "A. ein passender Zug bzw. eine passende Route",
+                    "B. ein reservierter Sitzplatz",
+                    "C. eine Verspätung des Zuges",
+                    "D. ein Bahnhof ohne Umstieg"
+                ],
+                correctIndex: 0,
+                explanation: "<strong>Jawaban Benar: A (ein passender Zug bzw. eine passende Route)</strong><br><br>💡 <em>Pembahasan:</em> Kata sifat <em>geeignet</em> = sesuai/cocok, dan <em>die Verbindung</em> = rute/sambungan transportasi. Jadi <strong>„geeignete Verbindung“</strong> berarti <strong>rute atau jadwal kereta yang cocok/sesuai</strong> dengan rencana kita."
+            },
+            {
+                id: 4,
+                question: "4. Was bedeutet „umsteigen“?",
+                options: [
+                    "A. einen Zug verpassen",
+                    "B. aus dem Zug aussteigen und nach Hause gehen",
+                    "C. von einem Verkehrsmittel/Zug in ein anderes wechseln",
+                    "D. einen Sitzplatz wechseln"
+                ],
+                correctIndex: 2,
+                explanation: "<strong>Jawaban Benar: C (von einem Verkehrsmittel/Zug in ein anderes wechseln)</strong><br><br>💡 <em>Pembahasan:</em> Kata kerja <strong>„umsteigen“</strong> berarti <strong>transit / berpindah kereta atau moda transportasi</strong> dari satu kendaraan ke kendaraan lain."
+            },
+            {
+                id: 5,
+                question: "5. Welche Bedeutung hat „unerwartet“?",
+                options: [
+                    "A. vorher geplant",
+                    "B. plötzlich und nicht vorhergesehen",
+                    "C. besonders angenehm",
+                    "D. sehr wahrscheinlich"
+                ],
+                correctIndex: 1,
+                explanation: "<strong>Jawaban Benar: B (plötzlich und nicht vorhergesehen)</strong><br><br>💡 <em>Pembahasan:</em> Awalan <em>un-</em> menyatakan negasi dari <em>erwartet</em> (diharapkan/diduga). Jadi <strong>„unerwartet“</strong> berarti <strong>tidak terduga / mendadak / tidak diperkirakan sebelumnya</strong>."
+            },
+            {
+                id: 6,
+                question: "6. Welche Kollokation ist korrekt?",
+                options: [
+                    "A. eine Verspätung machen",
+                    "B. eine Verspätung bekommen",
+                    "C. eine Verspätung haben",
+                    "D. eine Verspätung nehmen"
+                ],
+                correctIndex: 2,
+                explanation: "<strong>Jawaban Benar: C (eine Verspätung haben)</strong><br><br>💡 <em>Pembahasan:</em> Pasangan kata (Kollokation) standar dalam Bahasa Jerman untuk kereta yang terlambat adalah <strong>„Verspätung haben“</strong> (mengalami/memiliki keterlambatan).<br>• <em>Contoh:</em> Der Zug hat 10 Minuten Verspätung."
+            },
+            {
+                id: 7,
+                question: "7. Was bedeutet „etwas besprechen“?",
+                options: [
+                    "A. etwas gemeinsam diskutieren oder planen",
+                    "B. etwas schnell vergessen",
+                    "C. etwas schriftlich kopieren",
+                    "D. etwas absagen"
+                ],
+                correctIndex: 0,
+                explanation: "<strong>Jawaban Benar: A (etwas gemeinsam diskutieren oder planen)</strong><br><br>💡 <em>Pembahasan:</em> Kata kerja transitif <strong>„etwas besprechen“</strong> berarti <strong>mendiskusikan, membicarakan, atau merencanakan sesuatu bersama orang lain</strong>."
+            },
+            {
+                id: 8,
+                question: "8. Was bedeutet „die Landschaft genießen“?",
+                options: [
+                    "A. die Landschaft fotografieren und verkaufen",
+                    "B. die Umgebung bewusst anschauen und schön finden",
+                    "C. die Landschaft verändern",
+                    "D. einen neuen Ort planen"
+                ],
+                correctIndex: 1,
+                explanation: "<strong>Jawaban Benar: B (die Umgebung bewusst anschauen und schön finden)</strong><br><br>💡 <em>Pembahasan:</em> <strong>„Genießen“</strong> = menikmati. Jadi <strong>„die Landschaft genießen“</strong> berarti <strong>menikmati pemandangan alam/lingkungan sekitar</strong> dengan rasa senang."
+            },
+            {
+                id: 9,
+                question: "9. Welche Bedeutung hat „ins Gespräch kommen“?",
+                options: [
+                    "A. einen Streit anfangen",
+                    "B. plötzlich schweigen",
+                    "C. anfangen, miteinander zu sprechen",
+                    "D. ein Gespräch beenden"
+                ],
+                correctIndex: 2,
+                explanation: "<strong>Jawaban Benar: C (anfangen, miteinander zu sprechen)</strong><br><br>💡 <em>Pembahasan:</em> Frasa Nomen-Verb-Verbindung <strong>„ins Gespräch kommen“</strong> adalah ungkapan khas B1-B2 yang berarti <strong>mulai saling mengobrol / bercakap-cakap</strong> dengan seseorang."
+            },
+            {
+                id: 10,
+                question: "10. Was ist eine „Empfehlung“?",
+                options: [
+                    "A. eine persönliche oder fachliche Anregung, etwas zu wählen oder zu besuchen",
+                    "B. eine verbindliche Vorschrift",
+                    "C. eine unerwartete Nachricht",
+                    "D. eine Beschwerde"
+                ],
+                correctIndex: 0,
+                explanation: "<strong>Jawaban Benar: A (eine persönliche oder fachliche Anregung...)</strong><br><br>💡 <em>Pembahasan:</em> Kata benda <strong>„die Empfehlung“</strong> berasal dari kata kerja <em>empfehlen</em> (mempromosikan/merekomendasikan), yang berarti <strong>saran / rekomendasi</strong>."
+            },
+            {
+                id: 11,
+                question: "11. Was bedeutet „sehenswert“?",
+                options: [
+                    "A. schwer zu erreichen",
+                    "B. interessant genug, dass man es sich anschauen sollte",
+                    "C. sehr teuer",
+                    "D. nur für Touristen geeignet"
+                ],
+                correctIndex: 1,
+                explanation: "<strong>Jawaban Benar: B (interessant genug, dass man es sich anschauen sollte)</strong><br><br>💡 <em>Pembahasan:</em> Kata sifat <strong>„sehenswert“</strong> gabungan dari <em>sehen</em> (melihat) + <em>wert</em> (layak/bernilai), artinya <strong>layak dikunjungi / bernilai untuk dilihat</strong>."
+            },
+            {
+                id: 12,
+                question: "12. Welche Kollokation ist korrekt?",
+                options: [
+                    "A. mit einer Entscheidung zufrieden sein",
+                    "B. mit einer Entscheidung genießen",
+                    "C. mit einer Entscheidung erreichen",
+                    "D. mit einer Entscheidung unterhalten"
+                ],
+                correctIndex: 0,
+                explanation: "<strong>Jawaban Benar: A (mit einer Entscheidung zufrieden sein)</strong><br><br>💡 <em>Pembahasan:</em> Kata sifat <em>zufrieden</em> membutuhkan preposisi <strong>„mit“</strong> + Dativ. Kollokasi yang tepat: <strong>„mit etwas zufrieden sein“</strong> (puas dengan suatu keputusan/hal)."
+            },
+            {
+                id: 13,
+                question: "13. Was bedeutet „eine Gelegenheit nutzen“?",
+                options: [
+                    "A. eine Möglichkeit bewusst verwenden",
+                    "B. eine Möglichkeit ablehnen",
+                    "C. eine Reise verschieben",
+                    "D. einen Fehler vermeiden"
+                ],
+                correctIndex: 0,
+                explanation: "<strong>Jawaban Benar: A (eine Möglichkeit bewusst verwenden)</strong><br><br>💡 <em>Pembahasan:</em> <strong>„die Gelegenheit“</strong> = kesempatan, <strong>„nutzen“</strong> = menggunakan/memanfaatkan. Jadi frasa ini berarti <strong>memanfaatkan/menggunakan kesempatan sebaik mungkin</strong>."
+            }
+        ];
+
+        // C-Test Detail Explanation Data
+        const ctestDetails = [
+            { gap: 1, prefix: "entsch", answer: "ieden", full: "entschieden", meaning: "memutuskan (Präteritum)", rule: "Präteritum dari 'sich entscheiden' -> wir entschieden uns." },
+            { gap: 2, prefix: "umweltfr", answer: "eundlich", full: "umweltfreundlich", meaning: "ramah lingkungan", rule: "Adjektiv: umwelt + freundlich." },
+            { gap: 3, prefix: "Verbin", answer: "dung", full: "Verbindung", meaning: "koneksi / rute kereta", rule: "Nomen feminin: die Verbindung." },
+            { gap: 4, prefix: "Umst", answer: "eigen", full: "Umsteigen", meaning: "transit / berganti kereta", rule: "Nominalisiertes Verb: das Umsteigen." },
+            { gap: 5, prefix: "unerw", answer: "artete", full: "unerwartete", meaning: "tak terduga", rule: "Adjektivdeklinations-Endung nach unbestimmtem Artikel 'eine' (Akk. Feminin)." },
+            { gap: 6, prefix: "Verspät", answer: "ung", full: "Verspätung", meaning: "keterlambatan", rule: "Nomen feminin: die Verspätung." },
+            { gap: 7, prefix: "techn", answer: "ischen", meaning: "teknis", full: "technischen", rule: "Adjektivendung nach Preposition 'wegen einer' (Dativ/Genitiv feminin)." },
+            { gap: 8, prefix: "bespr", answer: "echen", full: "besprechen", meaning: "membicarakan / mendiskusikan", rule: "Infinitiv mit zu: 'um... zu besprechen'." },
+            { gap: 9, prefix: "Sitzp", answer: "lätze", full: "Sitzplätze", meaning: "tempat duduk (Plural)", rule: "Plural von der Sitzplatz -> die Sitzplätze." },
+            { gap: 10, prefix: "Lands", answer: "chaft", full: "Landschaft", meaning: "pemandangan alam", rule: "Nomen feminin: die Landschaft." },
+            { gap: 11, prefix: "The", answer: "men", full: "Themen", meaning: "topik-topik (Plural)", rule: "Plural von das Thema -> die Themen." },
+            { gap: 12, prefix: "Gesp", answer: "räch", full: "Gespräch", meaning: "percakapan / obrolan", rule: "Nomen: ins Gespräch kommen (Nomen-Verb-Verbindung)." },
+            { gap: 13, prefix: "Empfeh", answer: "lungen", full: "Empfehlungen", meaning: "rekomendasi (Plural)", rule: "Plural von die Empfehlung -> die Empfehlungen." },
+            { gap: 14, prefix: "Aufen", answer: "thalt", full: "Aufenthalt", meaning: "masa tinggal / kunjungan", rule: "Nomen maskulin: der Aufenthalt." },
+            { gap: 15, prefix: "ents", answer: "pannt", full: "entspannt", meaning: "santai / rileks", rule: "Adjektiv / Partizip II als Adjektiv." },
+            { gap: 16, prefix: "zufr", answer: "ieden", full: "zufrieden", meaning: "puas", rule: "Adjektiv: mit etwas zufrieden sein." },
+            { gap: 17, prefix: "Geleg", answer: "enheit", full: "Gelegenheit", meaning: "kesempatan", rule: "Nomen feminin: die Gelegenheit." }
+        ];
+
+        // State variables
+        let currentQuizIndex = 0;
+        let userQuizAnswers = new Array(quizData.length).fill(null);
+        let quizScore = 0;
+
+        // Initialize Page
+        window.onload = function() {
+            renderQuizQuestion();
+        };
+
+        // Render current Quiz Question
+        function renderQuizQuestion() {
+            const q = quizData[currentQuizIndex];
+            document.getElementById('quiz-current-num').innerText = currentQuizIndex + 1;
+            document.getElementById('quiz-question-text').innerText = q.question;
+            document.getElementById('quiz-progress-bar').style.width = `${((currentQuizIndex + 1) / quizData.length) * 100}%`;
+
+            // Prev button state
+            document.getElementById('btn-prev-quiz').disabled = (currentQuizIndex === 0);
+
+            // Container for options
+            const optionsContainer = document.getElementById('quiz-options-container');
+            optionsContainer.innerHTML = '';
+
+            const selectedAnswer = userQuizAnswers[currentQuizIndex];
+
+            q.options.forEach((optText, optIdx) => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn w-full text-left p-4 rounded-xl border-2 font-medium text-slate-800 flex justify-between items-center bg-white shadow-sm hover:border-amber-400 hover:bg-amber-50/50`;
+                
+                let iconHTML = `<span class="w-6 h-6 rounded-full border-2 border-slate-300 inline-flex items-center justify-center text-xs text-slate-400"></span>`;
+
+                // If user has answered this question
+                if (selectedAnswer !== null) {
+                    btn.disabled = true; // Lock options once selected
+                    if (optIdx === q.correctIndex) {
+                        btn.className = `option-btn w-full text-left p-4 rounded-xl border-2 font-semibold text-emerald-900 bg-emerald-50 border-emerald-500 shadow-sm correct-anim`;
+                        iconHTML = `<span class="w-6 h-6 rounded-full bg-emerald-500 text-white inline-flex items-center justify-center text-xs"><i class="fa-solid fa-check"></i></span>`;
+                    } else if (optIdx === selectedAnswer) {
+                        btn.className = `option-btn w-full text-left p-4 rounded-xl border-2 font-semibold text-rose-900 bg-rose-50 border-rose-500 shadow-sm wrong-anim`;
+                        iconHTML = `<span class="w-6 h-6 rounded-full bg-rose-500 text-white inline-flex items-center justify-center text-xs"><i class="fa-solid fa-xmark"></i></span>`;
+                    } else {
+                        btn.className = `option-btn w-full text-left p-4 rounded-xl border border-slate-200 text-slate-400 bg-slate-50 opacity-60`;
+                    }
+                } else {
+                    btn.onclick = () => selectQuizAnswer(optIdx);
+                }
+
+                btn.innerHTML = `
+                    <span>${optText}</span>
+                    ${iconHTML}
+                `;
+                optionsContainer.appendChild(btn);
+            });
+
+            // Handle Explanation Box
+            const explBox = document.getElementById('quiz-explanation-box');
+            if (selectedAnswer !== null) {
+                explBox.classList.remove('hidden');
+                const isCorrect = (selectedAnswer === q.correctIndex);
+                
+                if (isCorrect) {
+                    explBox.className = "mt-6 p-5 rounded-xl border bg-emerald-50/90 border-emerald-200 text-emerald-900";
+                    document.getElementById('explanation-icon').innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600"></i>';
+                    document.getElementById('explanation-status').innerText = "BENAR! / Richtig!";
+                    document.getElementById('explanation-status').className = "font-bold text-base text-emerald-700";
+                } else {
+                    explBox.className = "mt-6 p-5 rounded-xl border bg-rose-50/90 border-rose-200 text-rose-900";
+                    document.getElementById('explanation-icon').innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600"></i>';
+                    document.getElementById('explanation-status').innerText = "SALAH! / Falsch!";
+                    document.getElementById('explanation-status').className = "font-bold text-base text-rose-700";
+                }
+
+                document.getElementById('explanation-text').innerHTML = q.explanation;
+                document.getElementById('btn-next-quiz').disabled = false;
+            } else {
+                explBox.classList.add('hidden');
+                document.getElementById('btn-next-quiz').disabled = true;
+            }
+        }
+
+        // Handle option click
+        function selectQuizAnswer(index) {
+            userQuizAnswers[currentQuizIndex] = index;
+            
+            // Recalculate Quiz Score
+            quizScore = 0;
+            userQuizAnswers.forEach((ans, i) => {
+                if (ans === quizData[i].correctIndex) quizScore++;
+            });
+
+            document.getElementById('quiz-score-badge').innerText = `Skor Quiz: ${quizScore} / 13`;
+            renderQuizQuestion();
+        }
+
+        // Previous question button
+        function prevQuizQuestion() {
+            if (currentQuizIndex > 0) {
+                currentQuizIndex--;
+                renderQuizQuestion();
+            }
+        }
+
+        // Next question or proceed to C-Test
+        function nextQuizQuestion() {
+            if (currentQuizIndex < quizData.length - 1) {
+                currentQuizIndex++;
+                renderQuizQuestion();
+            } else {
+                // Quiz completed -> Transition directly to C-Test!
+                showSection('section-ctest');
+                updateNavStage(2);
+            }
+        }
+
+        // Navigation stage indicator updater
+        function updateNavStage(stage) {
+            const nav1 = document.getElementById('nav-stage-1');
+            const nav2 = document.getElementById('nav-stage-2');
+            const nav3 = document.getElementById('nav-stage-3');
+
+            nav1.className = "px-3 py-1 rounded-full text-slate-400 bg-slate-800";
+            nav2.className = "px-3 py-1 rounded-full text-slate-400 bg-slate-800";
+            nav3.className = "px-3 py-1 rounded-full text-slate-400 bg-slate-800";
+
+            if (stage === 1) nav1.className = "px-3 py-1 rounded-full bg-amber-400 text-slate-900 font-bold shadow";
+            if (stage === 2) nav2.className = "px-3 py-1 rounded-full bg-amber-400 text-slate-900 font-bold shadow";
+            if (stage === 3) nav3.className = "px-3 py-1 rounded-full bg-emerald-400 text-slate-900 font-bold shadow";
+        }
+
+        function showSection(sectionId) {
+            document.getElementById('section-quiz').classList.add('hidden');
+            document.getElementById('section-ctest').classList.add('hidden');
+            document.getElementById('section-results').classList.add('hidden');
+
+            document.getElementById(sectionId).classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // C-Test Submission & Scoring
+        function finishCTest() {
+            let ctestCorrectCount = 0;
+            const ctestExplanationsHTML = [];
+
+            ctestDetails.forEach((item) => {
+                const inputEl = document.getElementById(`ctest-gap-${item.gap}`);
+                const userVal = (inputEl.value || '').trim().toLowerCase();
+                const expectedVal = item.answer.toLowerCase();
+
+                const isCorrect = (userVal === expectedVal);
+                if (isCorrect) ctestCorrectCount++;
+
+                ctestExplanationsHTML.push(`
+                    <div class="p-4 rounded-xl border ${isCorrect ? 'bg-emerald-50/80 border-emerald-200' : 'bg-rose-50/80 border-rose-200'}">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-bold uppercase tracking-wide ${isCorrect ? 'text-emerald-700' : 'text-rose-700'}">
+                                Gap #${item.gap}: ${isCorrect ? '✓ Benar' : '✗ Salah / Kurang Tepat'}
+                            </span>
+                            <span class="text-xs font-mono px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-700 font-bold">
+                                ${item.prefix}<strong>${item.answer}</strong>
+                            </span>
+                        </div>
+                        <div class="text-sm font-semibold text-slate-900 mb-1">
+                            Kata Lengkap: <span class="text-blue-700 underline">${item.full}</span> (${item.meaning})
+                        </div>
+                        <div class="text-xs text-slate-600">
+                            <strong>Jawaban Anda:</strong> ${userVal ? item.prefix + userVal : '<em>(Kosong)</em>'}<br>
+                            <strong>Analisis Tata Bahasa / Kosa Kata:</strong> ${item.rule}
+                        </div>
+                    </div>
+                `);
+            });
+
+            // Populate Final Scores
+            document.getElementById('final-quiz-score').innerText = `${quizScore} / 13`;
+            document.getElementById('final-ctest-score').innerText = `${ctestCorrectCount} / 17`;
+
+            const totalScore = quizScore + ctestCorrectCount;
+            const maxScore = 13 + 17; // 30
+            const percentage = Math.round((totalScore / maxScore) * 100);
+            document.getElementById('final-total-score').innerText = `${percentage}%`;
+
+            // Populate C-Test Explanation Grid
+            document.getElementById('ctest-explanation-grid').innerHTML = ctestExplanationsHTML.join('');
+
+            // Populate Quiz Summary List
+            const quizSummaryHTML = quizData.map((q, idx) => {
+                const userAnsIdx = userQuizAnswers[idx];
+                const isCorrect = (userAnsIdx === q.correctIndex);
+                return `
+                    <div class="p-4 rounded-xl border ${isCorrect ? 'bg-emerald-50/60 border-emerald-200' : 'bg-rose-50/60 border-rose-200'}">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-bold text-sm text-slate-900">${q.question}</span>
+                            <span class="text-xs px-2 py-1 rounded font-bold ${isCorrect ? 'bg-emerald-200 text-emerald-800' : 'bg-rose-200 text-rose-800'}">
+                                ${isCorrect ? 'Benar' : 'Salah'}
+                            </span>
+                        </div>
+                        <div class="text-xs text-slate-700">
+                            ${q.explanation}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('quiz-summary-list').innerHTML = quizSummaryHTML;
+
+            // Switch to section results
+            showSection('section-results');
+            updateNavStage(3);
+        }
+
+        // Download Results Summary as Text File
+        function downloadResultsPDF() {
+            let reportContent = `====================================================\n`;
+            reportContent += `  HASIL BELAJAR BAHASA JERMAN B1-B2 (EINE REISE MIT DEM ZUG)\n`;
+            reportContent += `====================================================\n\n`;
+            reportContent += `Skor Quiz Wortschatz: ${quizScore} / 13\n`;
+            
+            let ctestCount = 0;
+            ctestDetails.forEach((item) => {
+                const inputEl = document.getElementById(`ctest-gap-${item.gap}`);
+                if (inputEl && (inputEl.value || '').trim().toLowerCase() === item.answer.toLowerCase()) {
+                    ctestCount++;
+                }
+            });
+
+            reportContent += `Skor C-Test: ${ctestCount} / 17\n`;
+            reportContent += `Total Akurasi: ${Math.round(((quizScore + ctestCount) / 30) * 100)}%\n\n`;
+            reportContent += `----------------------------------------------------\n`;
+            reportContent += `1. KUNCI JAWABAN & PEMBAHASAN C-TEST (17 GAPS):\n`;
+            reportContent += `----------------------------------------------------\n`;
+
+            ctestDetails.forEach((item) => {
+                reportContent += `#${item.gap} [${item.prefix}${item.answer}] -> Kata Lengkap: ${item.full} (${item.meaning})\n   Aturan: ${item.rule}\n\n`;
+            });
+
+            reportContent += `----------------------------------------------------\n`;
+            reportContent += `2. TERJEMAHAN LENGKAP TEKS C-TEST (BAHASA INDONESIA):\n`;
+            reportContent += `----------------------------------------------------\n`;
+            reportContent += `"Bulan lalu saya dan seorang teman perempuan merencanakan perjalanan singkat, dan kami memutuskan untuk bepergian se-ramah lingkungan mungkin dengan naik kereta alih-alih menggunakan mobil. Pertama, kami mencari koneksi/rute yang sesuai dan memperhatikan agar tidak terbuang terlalu banyak waktu karena sering transit. Pada hari keberangkatan, kami tiba lebih awal di stasiun, tetapi di papan pengumuman diumumkan keterlambatan yang tak terduga akibat gangguan teknis. Kami memanfaatkan waktu ekstra tersebut untuk minum kopi dan membicarakan perjalanan kami selanjutnya sebelum kereta akhirnya tiba dan kami mencari tempat duduk kami. Selama perjalanan kami dapat menikmati pemandangan dan sekaligus bercakap-cakap mengenai berbagai topik, hingga kami mulai mengobrol dengan seorang wanita tua. Ia memberi kami beberapa rekomendasi berharga untuk masa tinggal kami dan merekomendasikan tempat yang sangat layak dikunjungi di dekat sana. Meskipun perjalanan memakan waktu sedikit lebih lama dari yang direncanakan, perjalanan berlangsung menyenangkan dan santai, sehingga kami sangat puas dengan keputusan kami dan menggunakan kesempatan ini untuk mengenal orang-orang baru serta menikmati lingkungan sekitar dengan lebih sadar."\n`;
+
+            const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'German_B1_B2_Quiz_and_CTest_Results.txt';
+            link.click();
+        }
+
+        // Reset Quiz & C-Test
+        function resetAll() {
+            currentQuizIndex = 0;
+            userQuizAnswers = new Array(quizData.length).fill(null);
+            quizScore = 0;
+
+            ctestDetails.forEach((item) => {
+                const el = document.getElementById(`ctest-gap-${item.gap}`);
+                if (el) el.value = '';
+            });
+
+            document.getElementById('quiz-score-badge').innerText = `Skor Quiz: 0 / 13`;
+            renderQuizQuestion();
+            showSection('section-quiz');
+            updateNavStage(1);
+        }
+    </script>
+</body>
+</html>
